@@ -1,0 +1,68 @@
+#
+#	purpose: serve as starting point for each script to set up all common elements (framework)
+#
+
+# #!/usr/bin/perl
+
+# use 5.010;
+# use strict;
+use warnings;
+
+use DBI;
+use strict;
+use POSIX qw(ceil);
+use Getopt::Long;
+use Cwd;
+use Tie::IxHash;
+use MY_DButility;
+use MY_Authen::DBAuth;
+use enum qw(:DB_=0 DEV);
+
+# my $debug = 1; #set debug flag
+
+## define db connection param
+ 
+ my $host = 'hostname';
+ my $user = "";
+ my $passwd = "";
+
+# get db authentification
+MyAuthen::DBAuth($host);
+
+#
+ my @db = (
+#	   {'DBHOST'=>$host, 'DBNAME'=>'dbname1', 'DBUSER'=>$user, 'DBPWD'=>$passwd},
+	   {'DBHOST'=>$host, 'DBNAME'=>'dbname2', 'DBUSER'=>$user, 'DBPWD'=>$passwd},
+          );
+
+### create db connection
+
+my @dbh=();
+for my $i (0..$#db) {
+  $dbh[$i] = DBI->connect("dbi:mysql:$db[$i]->{DBNAME};host=$db[$i]->{DBHOST}", $db[$i]->{DBUSER}, $db[$i]->{DBPWD}, {RaiseError => 1});
+}
+
+# define global variables:
+my ($sql, $query, $rtn);
+my %rtInfo = ();
+
+### call main functions
+
+
+### release db connections
+
+  for my $i (0..$#db) {
+    $dbh[$i]->disconnect;
+  }
+
+##########################################################
+#  BEGIN of utility function
+##########################################################
+sub ordered_hash_ref {
+    tie my %hash, 'Tie::IxHash', @_;
+    return \%hash;
+}
+
+##########################################################
+#  END of utility function
+##########################################################
